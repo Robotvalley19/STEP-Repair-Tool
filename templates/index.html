@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>STEP Bereiniger</title>
+<style>
+    /* Allgemein */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f0f0f0; /* hellgrauer Hintergrund */
+        color: #2e2e2e;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    /* Formular und Upload */
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background: #fff;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        opacity: 0.85;
+    }
+
+    button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    button.download-btn.step {
+        background-color: #3e8ef7;
+        color: white;
+    }
+
+    button.download-btn.stl {
+        background-color: #33b573;
+        color: white;
+    }
+
+    button.download-btn:hover {
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    button.clear-btn {
+        background-color: #d9534f;
+        color: white;
+    }
+
+    /* Status & Bericht */
+    h2 {
+        margin-top: 25px;
+    }
+
+    p, ul {
+        background: #e0e0e0;
+        padding: 15px;
+        border-radius: 8px;
+        list-style: none;
+    }
+
+    ul li {
+        margin-bottom: 5px;
+    }
+
+    /* Download Buttons Container */
+    .download-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+</style>
+</head>
+<body>
+    <h1>STEP Bereinigen und Solid erstellen</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="stepfile" accept=".step,.stp,.stl" required>
+        <button type="submit">Bereinigen</button>
+    </form>
+
+    <button class="clear-btn" onclick="clearFiles()">Alles löschen</button>
+
+    {% if message %}
+        <h2>Status:</h2>
+        <p>{{ message }}</p>
+    {% endif %}
+
+    {% if report %}
+        <h2>Geometrie prüfen</h2>
+        <ul>
+            <li>Vertices: {{ report.vertices }}</li>
+            <li>Edges: {{ report.edges }}</li>
+            <li>Faces: {{ report.faces }}</li>
+            <li>Offene Kanten: {{ report.open_edges }}</li>
+            <li>Volumen: {{ report.volume }}</li>
+            <li>Gewicht (kg): {{ report.weight_kg }}</li>
+        </ul>
+    {% endif %}
+
+    {% if step_download and stl_download %}
+        <h2>Exportieren:</h2>
+        <div class="download-buttons">
+            <button class="download-btn step" onclick="saveFile('{{ url_for('download', filename=step_download) }}', '{{ step_download }}')">STEP speichern</button>
+            <button class="download-btn stl" onclick="saveFile('{{ url_for('download', filename=stl_download) }}', '{{ stl_download }}')">STL speichern</button>
+        </div>
+    {% endif %}
+
+<script>
+function clearFiles() {
+    fetch("/clear", { method: "POST" })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+
+        // Alle Status- und Geometrieanzeigen entfernen
+        // Status
+        document.querySelectorAll('h2').forEach(h2 => {
+            if (h2.textContent.includes("Status") || h2.textContent.includes("Geometrie")) {
+                const next = h2.nextElementSibling;
+                if (next) next.remove(); // <p> oder <ul>
+                h2.remove(); // Überschrift selbst entfernen
+            }
+        });
+    })
+    .catch(err => alert("Fehler beim Löschen: " + err));
+}
+
+// Speichert Datei lokal mit Save As
+function saveFile(url, filename) {
+    fetch(url)
+    .then(resp => resp.blob())
+    .then(blob => {
+        const a = document.createElement('a');
+        const objectUrl = URL.createObjectURL(blob);
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(objectUrl);
+    })
+    .catch(err => alert("Fehler beim Speichern: " + err));
+}
+</script>
+</body>
+</html>

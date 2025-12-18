@@ -1,0 +1,5 @@
+Flask==2.3.7
+pyparsing==3.1.1
+numpy==1.26.6
+# FreeCAD-Python-Bindings (Abhängig vom System, z.B. Ubuntu LTS)
+# z.B. auf Ubuntu: sudo apt install freecad python3-freecad
