@@ -1,4 +1,4 @@
-# STEP-Reparaturtool
+# STEP-Repair-Tool
 
 Ein Open-Source Tool zur Bereinigung und Reparatur von STEP (.step/.stp) und STL (.stl) Dateien, damit sie für FEM- und andere Simulationsprogramme zuverlässig nutzbar sind.
 
